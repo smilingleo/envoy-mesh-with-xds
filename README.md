@@ -44,7 +44,7 @@ You can use [pumba](https://github.com/gaia-adm/pumba) to emulate network latenc
 
 ```bash
 ./pumba.sh
-pumba --interval 4s netem --duration 3s delay --time 2000 envoy_recommendation-envoy_1
+pumba --interval 4s netem --duration 3s delay --time 2000 re2:.*recommendation-envoy_1
 ```
 
 By above command, 3 seconds latency will be added to `recommendation` service, check the Zipkin tracing.
