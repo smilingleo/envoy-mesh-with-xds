@@ -39,3 +39,12 @@ To change the envoy configuration, you can modify `data.json`, `xds` will automa
 ## Request Tracing
 
 Open [Zipkin](http://localhost:9411), select `front` service and click `Find Traces`. You will see a request with 3 spans.
+
+You can use [pumba](https://github.com/gaia-adm/pumba) to emulate network latency, run:
+
+```bash
+./pumba.sh
+pumba --interval 4s netem --duration 3s delay --time 2000 envoy_recommendation-envoy_1
+```
+
+By above command, 3 seconds latency will be added to `recommendation` service, check the Zipkin tracing.
