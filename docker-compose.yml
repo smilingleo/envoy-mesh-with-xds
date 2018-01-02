@@ -1,0 +1,89 @@
+version: '2'
+services:
+
+  front-envoy:
+    build:
+      context: envoy/
+    volumes:
+      - ./envoy/envoy.json:/etc/envoy.json
+    depends_on:
+      - xds
+    ports:
+      - "8080:8080"
+      - "8001"
+    entrypoint: /usr/local/bin/envoy -c /etc/envoy.json --service-cluster front --service-node front
+
+
+  product-envoy:
+    build:
+      context: envoy/
+    volumes:
+      - ./envoy/envoy.json:/etc/envoy.json
+    depends_on:
+      - xds
+    expose:
+      - "8080"
+      - "4000"
+      - "5000"
+      - "8001"
+    entrypoint: /usr/local/bin/envoy -c /etc/envoy.json --service-cluster product --service-node product
+  product:
+    build:
+      context: app/product
+    environment:
+      REVIEW_URI: http://product-envoy:4000/reviews
+      RECOMMENDATION_URI: http://product-envoy:5000/recommendations
+    expose:
+      - "3000"
+
+  review-envoy:
+    build:
+      context: envoy/
+    volumes:
+      - ./envoy/envoy.json:/etc/envoy.json
+    depends_on:
+      - xds
+    expose:
+      - "8080"
+      - "8001"
+    entrypoint: /usr/local/bin/envoy -c /etc/envoy.json --service-cluster review --service-node review
+  review:
+    build:
+      context: app/review
+    expose:
+      - "3000"
+
+  recommendation-envoy:
+    build:
+      context: envoy/
+    volumes:
+      - ./envoy/envoy.json:/etc/envoy.json
+    depends_on:
+      - xds
+    expose:
+      - "8080"
+      - "8001"
+    entrypoint: /usr/local/bin/envoy -c /etc/envoy.json --service-cluster recommendation --service-node recommendation
+  recommendation:
+    build:
+      context: app/recommendation
+    ports:
+      - "3000"
+
+  xds:
+    build:
+      context: envoy/xds/
+    volumes:
+      - ./envoy/xds/data.json:/data.json      
+      - ./envoy/xds/index.js:/opt/app/index.js
+    ports:
+      - "3000:3000"
+    entrypoint: node index.js
+
+  zipkin:
+    image: openzipkin/zipkin
+    expose:
+      - "9411"
+    ports:
+      - "9411:9411"
+

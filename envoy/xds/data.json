@@ -1,0 +1,313 @@
+{
+    "local_clusters": {
+        "product": {
+            "name": "product",
+            "connect_timeout_ms": 250,
+            "type": "strict_dns",
+            "lb_type": "round_robin",
+            "hosts": [
+                {
+                    "url": "tcp://product:3000"
+                }
+            ]
+        },
+        "review": {
+            "name": "review",
+            "connect_timeout_ms": 250,
+            "type": "strict_dns",
+            "lb_type": "round_robin",
+            "hosts": [
+                {
+                    "url": "tcp://review:3000"
+                }
+            ]
+        },
+        "recommendation": {
+            "name": "recommendation",
+            "connect_timeout_ms": 250,
+            "type": "strict_dns",
+            "lb_type": "round_robin",
+            "hosts": [
+                {
+                    "url": "tcp://recommendation:3000"
+                }
+            ]
+        }
+    },
+    "envoy_clusters": {
+        "product": {
+            "name": "product-envoy",
+            "connect_timeout_ms": 250,
+            "type": "strict_dns",
+            "lb_type": "round_robin",
+            "hosts": [
+                {
+                    "url": "tcp://product-envoy:8080"
+                }
+            ]
+        },
+        "review": {
+            "name": "review-envoy",
+            "connect_timeout_ms": 250,
+            "type": "strict_dns",
+            "lb_type": "round_robin",
+            "hosts": [
+                {
+                    "url": "tcp://review-envoy:8080"
+                }
+            ]
+        },
+        "recommendation": {
+            "name": "recommendation-envoy",
+            "connect_timeout_ms": 250,
+            "type": "strict_dns",
+            "lb_type": "round_robin",
+            "hosts": [
+                {
+                    "url": "tcp://recommendation-envoy:8080"
+                }
+            ]
+        }
+    },
+    "listeners": {
+        "front": [
+            {
+                "address": "tcp://0.0.0.0:8080",
+                "filters": [
+                    {
+                        "name": "http_connection_manager",
+                        "config": {
+                            "generate_request_id": true,
+                            "tracing": {
+                                "operation_name": "egress"
+                            },
+                            "codec_type": "auto",
+                            "stat_prefix": "ingress",
+                            "rds": {
+                                "route_config_name": "local_route",
+                                "refresh_delay_ms": 10000,
+                                "cluster": "xds-http"
+                            },
+                            "filters": [
+                                {
+                                    "name": "router",
+                                    "config": {}
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "product": [
+            {
+                "address": "tcp://0.0.0.0:8080",
+                "filters": [
+                    {
+                        "name": "http_connection_manager",
+                        "config": {
+                            "tracing": {
+                                "operation_name": "ingress"
+                            },
+                            "codec_type": "auto",
+                            "stat_prefix": "ingress",
+                            "rds": {
+                                "route_config_name": "local_route",
+                                "refresh_delay_ms": 10000,
+                                "cluster": "xds-http"
+                            },
+                            "filters": [
+                                {
+                                    "name": "router",
+                                    "config": {}
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "address": "tcp://0.0.0.0:4000",
+                "filters": [
+                    {
+                        "name": "http_connection_manager",
+                        "config": {
+                            "tracing": {
+                                "operation_name": "egress"
+                            },
+                            "codec_type": "auto",
+                            "stat_prefix": "review_egress",
+                            "rds": {
+                                "route_config_name": "remote_review",
+                                "refresh_delay_ms": 10000,
+                                "cluster": "xds-http"
+                            },
+                            "filters": [
+                                {
+                                    "name": "router",
+                                    "config": {}
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "address": "tcp://0.0.0.0:5000",
+                "filters": [
+                    {
+                        "name": "http_connection_manager",
+                        "config": {
+                            "tracing": {
+                                "operation_name": "egress"
+                            },
+                            "codec_type": "auto",
+                            "stat_prefix": "recommendation_egress",
+                            "rds": {
+                                "route_config_name": "remote_recommendation",
+                                "refresh_delay_ms": 10000,
+                                "cluster": "xds-http"
+                            },
+                            "filters": [
+                                {
+                                    "name": "router",
+                                    "config": {}
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "review": [
+            {
+                "address": "tcp://0.0.0.0:8080",
+                "filters": [
+                    {
+                        "name": "http_connection_manager",
+                        "config": {
+                            "tracing": {
+                                "operation_name": "ingress"
+                            },
+                            "codec_type": "auto",
+                            "stat_prefix": "ingress",
+                            "rds": {
+                                "route_config_name": "local_route",
+                                "refresh_delay_ms": 10000,
+                                "cluster": "xds-http"
+                            },
+                            "filters": [
+                                {
+                                    "name": "router",
+                                    "config": {}
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "recommendation": [
+            {
+                "address": "tcp://0.0.0.0:8080",
+                "filters": [
+                    {
+                        "name": "http_connection_manager",
+                        "config": {
+                            "tracing": {
+                                "operation_name": "ingress"
+                            },
+                            "codec_type": "auto",
+                            "stat_prefix": "ingress",
+                            "rds": {
+                                "route_config_name": "local_route",
+                                "refresh_delay_ms": 10000,
+                                "cluster": "xds-http"
+                            },
+                            "filters": [
+                                {
+                                    "name": "router",
+                                    "config": {}
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "routes": {
+        "local_route": {
+            "front": [
+                {
+                    "prefix": "/",
+                    "timeout_ms": 0,
+                    "cluster": "product-envoy",
+                    "decorator": {
+                        "operation": "proxy"
+                    }
+                }
+            ],
+            "product": [
+                {
+                    "prefix": "/product-list",
+                    "timeout_ms": 0,
+                    "cluster": "product",
+                    "decorator": {
+                        "operation": "getProductList"
+                    }
+                },
+                {
+                    "prefix": "/products",
+                    "timeout_ms": 0,
+                    "cluster": "product",
+                    "decorator": {
+                        "operation": "getProducts"
+                    }
+                }
+            ],
+            "review": [
+                {
+                    "prefix": "/reviews",
+                    "timeout_ms": 0,
+                    "cluster": "review",
+                    "decorator": {
+                        "operation": "getReviews"
+                    }
+                }
+            ],
+            "recommendation": [
+                {
+                    "prefix": "/recommendations",
+                    "timeout_ms": 0,
+                    "cluster": "recommendation",
+                    "decorator": {
+                        "operation": "getRecommendations"
+                    }
+                }
+            ]
+        },
+        "remote_route": {
+            "product_review": [
+                {
+                    "prefix": "/reviews",
+                    "timeout_ms": 0,
+                    "cluster": "review-envoy",
+                    "decorator": {
+                        "operation": "getReviews"
+                    }
+                }
+            ],
+            "product_recommendation": [
+                {
+                    "prefix": "/recommendations",
+                    "timeout_ms": 0,
+                    "cluster": "recommendation-envoy",
+                    "decorator": {
+                        "operation": "getRecommendations"
+                    }
+                }
+            ]
+        }
+    }
+}
