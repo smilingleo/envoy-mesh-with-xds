@@ -301,7 +301,7 @@
             "product_recommendation": [
                 {
                     "prefix": "/recommendations",
-                    "timeout_ms": 0,
+                    "timeout_ms": 10,
                     "cluster": "recommendation-envoy",
                     "decorator": {
                         "operation": "getRecommendations"
